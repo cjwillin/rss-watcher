@@ -3,33 +3,42 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0b0c0e" />
     <title>{{ title or "RSS Watcher" }}</title>
     <link rel="stylesheet" href="/static/app.css" />
   </head>
   <body>
-    <div class="bg">
-      <div class="grain"></div>
-      <div class="glow"></div>
-    </div>
+    <div class="bg" aria-hidden="true"></div>
 
-    <header class="top">
-      <a class="brand" href="/">
-        <span class="dot"></span>
-        <span>RSS Watcher</span>
-      </a>
-      <nav class="nav">
-        <a class="navlink" href="/feeds">Feeds</a>
-        <a class="navlink" href="/rules">Rules</a>
-        <a class="navlink" href="/settings">Settings</a>
-      </nav>
+    <header class="top" role="banner">
+      <div class="top-in">
+        <a class="brand" href="/">
+          <span class="mark" aria-hidden="true">
+            <span class="mark-dot"></span>
+          </span>
+          <span class="brand-txt">
+            <span class="brand-name">RSS Watcher</span>
+            <span class="brand-sub">keyword alerts, quietly</span>
+          </span>
+        </a>
+
+        <nav class="nav" aria-label="Primary">
+          <a class="navlink {% if active == 'home' %}is-active{% endif %}" href="/">Overview</a>
+          <a class="navlink {% if active == 'feeds' %}is-active{% endif %}" href="/feeds">Feeds</a>
+          <a class="navlink {% if active == 'rules' %}is-active{% endif %}" href="/rules">Rules</a>
+          <a class="navlink {% if active == 'settings' %}is-active{% endif %}" href="/settings">Settings</a>
+        </nav>
+      </div>
     </header>
 
     <main class="wrap">
       {% block content %}{% endblock %}
       <footer class="foot">
-        <div class="muted">Polling runs in the background. Alerts de-dupe per item and rule.</div>
+        <div class="foot-in">
+          <div class="muted">Polling runs in the background. Alerts de-dupe per item and rule.</div>
+          <div class="muted">Built to be boring, reliable, and fast.</div>
+        </div>
       </footer>
     </main>
   </body>
 </html>
-

@@ -1,3 +1,4 @@
+{% set active = 'settings' %}
 {% extends "base.html" %}
 {% block content %}
   <section class="page-h">
@@ -10,6 +11,7 @@
       <div class="card-h">
         <div class="card-t">General</div>
       </div>
+      <div class="card-b">
       <form class="form" method="post" action="/settings/save">
         <div class="cols">
           <label>
@@ -67,7 +69,7 @@
           <a class="btn ghost" href="/">Back</a>
         </div>
       </form>
+      </div>
     </div>
   </section>
 {% endblock %}
-

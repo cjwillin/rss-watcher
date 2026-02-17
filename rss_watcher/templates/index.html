@@ -1,22 +1,42 @@
+{% set active = 'home' %}
 {% extends "base.html" %}
 {% block content %}
   <section class="hero">
-    <div>
-      <h1>Watch feeds. Catch keywords.</h1>
-      <p class="lede">Add feeds, define keywords, and get notified when something matches.</p>
-      <div class="stats">
-        <div class="pill">Interval: <span class="mono">{{ poll_interval_seconds }}s</span></div>
-        <div class="pill">Last poll: <span class="mono">{{ last_poll_at or "never" }}</span></div>
-        <div class="pill">Last alert: <span class="mono">{{ last_alert_at or "never" }}</span></div>
+    <div class="hero-copy">
+      <h1>Catch the moments that matter.</h1>
+      <p class="lede">A calm RSS watcher that polls in the background and pings you when a keyword shows up.</p>
+
+      <div class="chips" role="list">
+        <div class="chip" role="listitem">
+          <span class="chip-k">Interval</span>
+          <span class="chip-v mono">{{ poll_interval_seconds }}s</span>
+        </div>
+        <div class="chip" role="listitem">
+          <span class="chip-k">Last poll</span>
+          <span class="chip-v mono">{{ last_poll_at or "never" }}</span>
+        </div>
+        <div class="chip" role="listitem">
+          <span class="chip-k">Last alert</span>
+          <span class="chip-v mono">{{ last_alert_at or "never" }}</span>
+        </div>
       </div>
     </div>
-    <div class="hero-card">
-      <div class="k">Quick start</div>
-      <ol class="steps">
-        <li><a href="/feeds">Add a feed</a></li>
-        <li><a href="/rules">Add a keyword rule</a></li>
-        <li><a href="/settings">Enable notifications</a></li>
-      </ol>
+
+    <div class="hero-side">
+      <div class="card lift">
+        <div class="card-h">
+          <div class="card-t">Quick Start</div>
+          <div class="muted">3 steps</div>
+        </div>
+        <div class="card-b">
+          <ol class="steps">
+            <li><a href="/feeds">Add a feed</a></li>
+            <li><a href="/rules">Add a keyword rule</a></li>
+            <li><a href="/settings">Enable notifications</a></li>
+          </ol>
+          <div class="hint">Pushover is the simplest iOS push option.</div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -26,6 +46,7 @@
         <div class="card-t">Recent Alerts</div>
         <div class="muted">{{ alerts|length }} shown</div>
       </div>
+      <div class="card-b">
       {% if alerts %}
         <ul class="list">
           {% for a in alerts %}
@@ -42,20 +63,22 @@
       {% else %}
         <div class="empty">No alerts yet.</div>
       {% endif %}
+      </div>
     </div>
 
     <div class="card">
       <div class="card-h">
         <div class="card-t">Feeds</div>
-        <a class="muted" href="/feeds">manage</a>
+        <a class="muted link" href="/feeds">manage</a>
       </div>
+      <div class="card-b">
       {% if feeds %}
         <ul class="mini">
           {% for f in feeds[:8] %}
             <li class="mini-item">
               <div class="mini-name">{{ f.name }}</div>
               <div class="mini-meta">
-                {% if f.enabled %}<span class="good">enabled</span>{% else %}<span class="bad">paused</span>{% endif %}
+                {% if f.enabled %}<span class="pill good">enabled</span>{% else %}<span class="pill bad">paused</span>{% endif %}
               </div>
             </li>
           {% endfor %}
@@ -63,7 +86,7 @@
       {% else %}
         <div class="empty">Add a feed to begin.</div>
       {% endif %}
+      </div>
     </div>
   </section>
 {% endblock %}
-

@@ -1,3 +1,4 @@
+{% set active = 'rules' %}
 {% extends "base.html" %}
 {% block content %}
   <section class="page-h">
@@ -10,6 +11,7 @@
       <div class="card-h">
         <div class="card-t">Add Rule</div>
       </div>
+      <div class="card-b">
       <form class="form" method="post" action="/rules/add">
         <label>
           <span>Keyword</span>
@@ -26,6 +28,7 @@
         </label>
         <button class="btn" type="submit">Add</button>
       </form>
+      </div>
     </div>
 
     <div class="card">
@@ -33,6 +36,7 @@
         <div class="card-t">Current Rules</div>
         <div class="muted">{{ rules|length }} total</div>
       </div>
+      <div class="card-b">
       {% if rules %}
         <ul class="list">
           {% for r in rules %}
@@ -40,7 +44,7 @@
               <div class="item-top">
                 <div class="item-title-row">
                   <span class="tag">{{ r.keyword }}</span>
-                  {% if r.enabled %}<span class="good">enabled</span>{% else %}<span class="bad">paused</span>{% endif %}
+                  {% if r.enabled %}<span class="pill good">enabled</span>{% else %}<span class="pill bad">paused</span>{% endif %}
                 </div>
                 <div class="muted">Scope: {{ r.feed_name or "All feeds" }}</div>
               </div>
@@ -60,7 +64,7 @@
       {% else %}
         <div class="empty">No rules configured.</div>
       {% endif %}
+      </div>
     </div>
   </section>
 {% endblock %}
-

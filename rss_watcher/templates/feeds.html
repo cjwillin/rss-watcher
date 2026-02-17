@@ -1,3 +1,4 @@
+{% set active = 'feeds' %}
 {% extends "base.html" %}
 {% block content %}
   <section class="page-h">
@@ -10,6 +11,7 @@
       <div class="card-h">
         <div class="card-t">Add Feed</div>
       </div>
+      <div class="card-b">
       <form class="form" method="post" action="/feeds/add">
         <label>
           <span>Name</span>
@@ -21,6 +23,7 @@
         </label>
         <button class="btn" type="submit">Add</button>
       </form>
+      </div>
     </div>
 
     <div class="card">
@@ -28,6 +31,7 @@
         <div class="card-t">Current Feeds</div>
         <div class="muted">{{ feeds|length }} total</div>
       </div>
+      <div class="card-b">
       {% if feeds %}
         <ul class="list">
           {% for f in feeds %}
@@ -35,7 +39,7 @@
               <div class="item-top">
                 <div class="item-title-row">
                   <div class="item-title">{{ f.name }}</div>
-                  {% if f.enabled %}<span class="good">enabled</span>{% else %}<span class="bad">paused</span>{% endif %}
+                  {% if f.enabled %}<span class="pill good">enabled</span>{% else %}<span class="pill bad">paused</span>{% endif %}
                 </div>
                 <div class="muted mono">{{ f.url }}</div>
               </div>
@@ -55,7 +59,7 @@
       {% else %}
         <div class="empty">No feeds configured.</div>
       {% endif %}
+      </div>
     </div>
   </section>
 {% endblock %}
-
