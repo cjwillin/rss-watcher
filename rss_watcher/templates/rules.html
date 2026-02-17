@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="page-h">
+    <h2>Rules</h2>
+    <p class="muted">A rule is a keyword substring match. You can scope it to a feed or apply globally.</p>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <div class="card-h">
+        <div class="card-t">Add Rule</div>
+      </div>
+      <form class="form" method="post" action="/rules/add">
+        <label>
+          <span>Keyword</span>
+          <input name="keyword" placeholder="e.g. ransomware" required />
+        </label>
+        <label>
+          <span>Scope</span>
+          <select name="feed_id">
+            <option value="">All feeds</option>
+            {% for f in feeds %}
+              <option value="{{ f.id }}">{{ f.name }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <button class="btn" type="submit">Add</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="card-h">
+        <div class="card-t">Current Rules</div>
+        <div class="muted">{{ rules|length }} total</div>
+      </div>
+      {% if rules %}
+        <ul class="list">
+          {% for r in rules %}
+            <li class="item">
+              <div class="item-top">
+                <div class="item-title-row">
+                  <span class="tag">{{ r.keyword }}</span>
+                  {% if r.enabled %}<span class="good">enabled</span>{% else %}<span class="bad">paused</span>{% endif %}
+                </div>
+                <div class="muted">Scope: {{ r.feed_name or "All feeds" }}</div>
+              </div>
+              <div class="row">
+                <form method="post" action="/rules/toggle">
+                  <input type="hidden" name="rule_id" value="{{ r.id }}" />
+                  <button class="btn ghost" type="submit">{% if r.enabled %}Pause{% else %}Enable{% endif %}</button>
+                </form>
+                <form method="post" action="/rules/delete" onsubmit="return confirm('Delete this rule?');">
+                  <input type="hidden" name="rule_id" value="{{ r.id }}" />
+                  <button class="btn danger" type="submit">Delete</button>
+                </form>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="empty">No rules configured.</div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}
+

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+  <section class="page-h">
+    <h2>Feeds</h2>
+    <p class="muted">Manually add one or more RSS/Atom feed URLs.</p>
+  </section>
+
+  <section class="grid">
+    <div class="card">
+      <div class="card-h">
+        <div class="card-t">Add Feed</div>
+      </div>
+      <form class="form" method="post" action="/feeds/add">
+        <label>
+          <span>Name</span>
+          <input name="name" placeholder="e.g. Security News" />
+        </label>
+        <label>
+          <span>URL</span>
+          <input name="url" placeholder="https://example.com/rss.xml" required />
+        </label>
+        <button class="btn" type="submit">Add</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="card-h">
+        <div class="card-t">Current Feeds</div>
+        <div class="muted">{{ feeds|length }} total</div>
+      </div>
+      {% if feeds %}
+        <ul class="list">
+          {% for f in feeds %}
+            <li class="item">
+              <div class="item-top">
+                <div class="item-title-row">
+                  <div class="item-title">{{ f.name }}</div>
+                  {% if f.enabled %}<span class="good">enabled</span>{% else %}<span class="bad">paused</span>{% endif %}
+                </div>
+                <div class="muted mono">{{ f.url }}</div>
+              </div>
+              <div class="row">
+                <form method="post" action="/feeds/toggle">
+                  <input type="hidden" name="feed_id" value="{{ f.id }}" />
+                  <button class="btn ghost" type="submit">{% if f.enabled %}Pause{% else %}Enable{% endif %}</button>
+                </form>
+                <form method="post" action="/feeds/delete" onsubmit="return confirm('Delete this feed?');">
+                  <input type="hidden" name="feed_id" value="{{ f.id }}" />
+                  <button class="btn danger" type="submit">Delete</button>
+                </form>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="empty">No feeds configured.</div>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}
+

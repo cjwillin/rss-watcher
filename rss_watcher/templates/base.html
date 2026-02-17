@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title or "RSS Watcher" }}</title>
+    <link rel="stylesheet" href="/static/app.css" />
+  </head>
+  <body>
+    <div class="bg">
+      <div class="grain"></div>
+      <div class="glow"></div>
+    </div>
+
+    <header class="top">
+      <a class="brand" href="/">
+        <span class="dot"></span>
+        <span>RSS Watcher</span>
+      </a>
+      <nav class="nav">
+        <a class="navlink" href="/feeds">Feeds</a>
+        <a class="navlink" href="/rules">Rules</a>
+        <a class="navlink" href="/settings">Settings</a>
+      </nav>
+    </header>
+
+    <main class="wrap">
+      {% block content %}{% endblock %}
+      <footer class="foot">
+        <div class="muted">Polling runs in the background. Alerts de-dupe per item and rule.</div>
+      </footer>
+    </main>
+  </body>
+</html>
+

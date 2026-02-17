@@ -1,0 +1,30 @@
+[Unit]
+Description=RSS Watcher
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=rsswatcher
+Group=rsswatcher
+WorkingDirectory=/opt/rss-watcher
+
+Environment=RSSWATCHER_DB_PATH=/opt/rss-watcher/data/rss-watcher.db
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=-/etc/rss-watcher.env
+
+ExecStart=/opt/rss-watcher/.venv/bin/uvicorn rss_watcher.main:app --host 0.0.0.0 --port 8080
+
+Restart=always
+RestartSec=3
+
+# Basic hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/rss-watcher
+
+[Install]
+WantedBy=multi-user.target
+
