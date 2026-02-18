@@ -7,12 +7,13 @@ export default function Home() {
       </p>
 
       <div style={{ marginTop: 18, display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <a href="/api/auth/signin">Sign in with Google</a>
         <a href="/app">Open app</a>
         <a href="/api/health">Health check</a>
       </div>
 
       <p style={{ marginTop: 18, opacity: 0.85 }}>
-        Sign-in will be Google OAuth (open signups). This landing page will be updated once auth is wired.
+        Open signups (Google OAuth). After signing in, you will manage your own feeds and rules.
       </p>
     </main>
   );
