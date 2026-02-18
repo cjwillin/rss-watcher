@@ -5,7 +5,6 @@ import pytest
 import respx
 
 from rss_watcher import db
-from rss_watcher import notifier
 from rss_watcher import watcher
 
 
@@ -79,3 +78,33 @@ async def test_poll_once_creates_alert_and_logs(tmp_path, monkeypatch):
         logs = con.execute("SELECT area, level, message FROM app_log ORDER BY id ASC").fetchall()
         assert any(r["area"] == "poll" and r["level"] == "info" for r in logs)
 
+
+@pytest.mark.asyncio
+async def test_new_feed_is_baselined_no_alerts_then_alerts_on_new_items(tmp_path, monkeypatch):
+    db_file = tmp_path / "t.db"
+    monkeypatch.setenv("RSSWATCHER_DB_PATH", str(db_file))
+
+    feed_url_1 = "https://feed.test/rss.xml"
+    feed_url_2 = "https://feed.test/rss2.xml"
+
+    rss1 = RSS_XML
+    rss2 = RSS_XML.replace("item-a", "item-b").replace("http://example.test/a", "http://example.test/b")
+
+    db.migrate()
+    with db.connect() as con:
+        # New feed starts armed=0 so the first poll baselines it without alerts.
+        con.execute("INSERT INTO feeds(name, url, enabled, armed) VALUES(?, ?, 1, 0)", ("Example", feed_url_1))
+        con.execute("INSERT INTO rules(keyword, feed_id, enabled) VALUES(?, NULL, 1)", ("ransomware",))
+
+    with respx.mock(assert_all_called=True) as router:
+        router.get(feed_url_1).respond(200, text=rss1)
+        created1 = await watcher.poll_once()
+        assert created1 == 0
+
+        # Change the feed URL (simulates the next poll seeing a "new" item).
+        with db.connect() as con:
+            con.execute("UPDATE feeds SET url = ? WHERE name = ?", (feed_url_2, "Example"))
+
+        router.get(feed_url_2).respond(200, text=rss2)
+        created2 = await watcher.poll_once()
+        assert created2 == 1

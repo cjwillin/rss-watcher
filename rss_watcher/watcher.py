@@ -49,11 +49,12 @@ def _entry_text(entry: dict) -> str:
 class Match:
     rule_id: int
     keyword: str
+    created_at: str
 
 
 def _load_rules(con: sqlite3.Connection) -> list[sqlite3.Row]:
     return con.execute(
-        "SELECT id, keyword, feed_id FROM rules WHERE enabled = 1 ORDER BY id ASC"
+        "SELECT id, keyword, feed_id, created_at FROM rules WHERE enabled = 1 ORDER BY id ASC"
     ).fetchall()
 
 
@@ -71,7 +72,7 @@ def _find_matches(feed_id: int, text: str, rules: Iterable[sqlite3.Row]) -> list
         if r["feed_id"] is not None and int(r["feed_id"]) != int(feed_id):
             continue
         if kw.lower() in hay:
-            out.append(Match(rule_id=int(r["id"]), keyword=kw))
+            out.append(Match(rule_id=int(r["id"]), keyword=kw, created_at=str(r["created_at"])))
     return out
 
 
@@ -118,7 +119,7 @@ async def poll_once() -> int:
                     host=host, port=port, user=user, password=password, mail_from=mail_from, mail_to=mail_to
                 )
 
-        feeds = con.execute("SELECT id, name, url FROM feeds WHERE enabled = 1 ORDER BY id ASC").fetchall()
+        feeds = con.execute("SELECT id, name, url, armed FROM feeds WHERE enabled = 1 ORDER BY id ASC").fetchall()
         rules = _load_rules(con)
 
     if not feeds or not rules:
@@ -137,6 +138,7 @@ async def poll_once() -> int:
         feed_id = int(f["id"])
         url = str(f["url"])
         name = str(f["name"])
+        armed = int(f["armed"] or 0)
         try:
             content = await _fetch_feed(url)
             parsed = feedparser.parse(content)
@@ -149,6 +151,30 @@ async def poll_once() -> int:
                     message=f"feed fetch/parse failed: {name}",
                     feed_id=feed_id,
                     error=traceback.format_exc(limit=10),
+                )
+            continue
+
+        # Baseline pass for newly-added feeds: store the current set of items as "seen",
+        # but do not alert. Next poll will alert only for newly-discovered items.
+        if armed == 0:
+            with db.connect() as con:
+                for e in parsed.entries or []:
+                    ek = _entry_key(e)
+                    link = (e.get("link") or "").strip() or url
+                    title = (e.get("title") or "").strip() or "(untitled)"
+                    published = (e.get("published") or e.get("updated") or "").strip() or None
+                    summary = (e.get("summary") or e.get("description") or "").strip() or None
+                    con.execute(
+                        "INSERT OR IGNORE INTO entries(feed_id, entry_key, link, title, published, summary) VALUES(?, ?, ?, ?, ?, ?)",
+                        (feed_id, ek, link, title, published, summary),
+                    )
+                con.execute("UPDATE feeds SET armed = 1 WHERE id = ?", (feed_id,))
+                db.log_write(
+                    con,
+                    level="info",
+                    area="feed",
+                    message=f"feed baselined (no alerts): {name}",
+                    feed_id=feed_id,
                 )
             continue
 
@@ -165,25 +191,31 @@ async def poll_once() -> int:
 
             with db.connect() as con:
                 row = con.execute(
-                    "SELECT id FROM entries WHERE feed_id = ? AND entry_key = ?",
+                    "SELECT id, seen_at FROM entries WHERE feed_id = ? AND entry_key = ?",
                     (feed_id, ek),
                 ).fetchone()
                 if row:
                     entry_id = int(row["id"])
+                    entry_seen_at = str(row["seen_at"])
                 else:
                     con.execute(
                         "INSERT OR IGNORE INTO entries(feed_id, entry_key, link, title, published, summary) VALUES(?, ?, ?, ?, ?, ?)",
                         (feed_id, ek, link, title, published, summary),
                     )
                     row2 = con.execute(
-                        "SELECT id FROM entries WHERE feed_id = ? AND entry_key = ?",
+                        "SELECT id, seen_at FROM entries WHERE feed_id = ? AND entry_key = ?",
                         (feed_id, ek),
                     ).fetchone()
                     if not row2:
                         continue
                     entry_id = int(row2["id"])
+                    entry_seen_at = str(row2["seen_at"])
 
                 for m in matches:
+                    # Apply rules going forward: if this entry was first seen before the rule existed,
+                    # skip alerting (prevents "backfilling" when you add a new rule).
+                    if entry_seen_at < m.created_at:
+                        continue
                     try:
                         con.execute(
                             "INSERT INTO alerts(entry_id, rule_id, keyword) VALUES(?, ?, ?)",

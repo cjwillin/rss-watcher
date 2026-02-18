@@ -29,6 +29,17 @@ def connect() -> Iterator[sqlite3.Connection]:
         con.close()
 
 
+def _has_column(con: sqlite3.Connection, table: str, column: str) -> bool:
+    rows = con.execute(f"PRAGMA table_info({table})").fetchall()
+    return any(r["name"] == column for r in rows)
+
+
+def _ensure_column(con: sqlite3.Connection, table: str, column: str, ddl: str) -> None:
+    if _has_column(con, table, column):
+        return
+    con.execute(f"ALTER TABLE {table} ADD COLUMN {ddl}")
+
+
 def migrate() -> None:
     with connect() as con:
         con.executescript(
@@ -38,6 +49,7 @@ def migrate() -> None:
               name TEXT NOT NULL,
               url TEXT NOT NULL UNIQUE,
               enabled INTEGER NOT NULL DEFAULT 1,
+              armed INTEGER NOT NULL DEFAULT 1,
               created_at TEXT NOT NULL DEFAULT (datetime('now'))
             );
 
@@ -89,6 +101,10 @@ def migrate() -> None:
             """
         )
 
+        # Online upgrades for existing DBs.
+        # Existing feeds should default to armed=1 (to preserve current behavior).
+        _ensure_column(con, "feeds", "armed", "armed INTEGER NOT NULL DEFAULT 1")
+
 
 def kv_get(con: sqlite3.Connection, k: str, default: str | None = None) -> str | None:
     row = con.execute("SELECT v FROM kv WHERE k = ?", (k,)).fetchone()
@@ -137,4 +153,3 @@ def log_write(
         """,
         (max_rows,),
     )
-

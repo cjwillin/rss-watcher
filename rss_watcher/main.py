@@ -96,7 +96,8 @@ def feeds_add(name: str = Form(...), url: str = Form(...)):
         return RedirectResponse("/feeds", status_code=303)
     with db.connect() as con:
         con.execute(
-            "INSERT OR IGNORE INTO feeds(name, url, enabled) VALUES(?, ?, 1)",
+            # New feeds get a baseline warm-up pass (armed=0) so we don't alert on old items.
+            "INSERT OR IGNORE INTO feeds(name, url, enabled, armed) VALUES(?, ?, 1, 0)",
             (name, url),
         )
     return RedirectResponse("/feeds", status_code=303)
