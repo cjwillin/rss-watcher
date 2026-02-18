@@ -4,6 +4,10 @@ Watch one or more RSS/Atom feeds and alert on keyword matches.
 
 Includes a minimal, polished web UI plus a background polling loop that de-dupes alerts per `(feed item, rule)`.
 
+## Status
+
+This repository is being migrated from a legacy Python (FastAPI + Jinja) implementation to a Vercel-deployable Next.js app.
+
 ## What You Get
 
 - Web UI to manage:
@@ -54,14 +58,6 @@ Notifications:
 
 Environment variables override anything set in the UI.
 
-## Production Deploy (systemd)
-
-See `docs/deploy-systemd.md`.
-
-## Proxmox LXC Notes
-
-See `docs/deploy-proxmox-lxc.md`.
-
 ## Security Notes
 
 - If you enter secrets in the web UI, they are stored in SQLite as plaintext.
@@ -70,4 +66,3 @@ See `docs/deploy-proxmox-lxc.md`.
 ## License
 
 MIT (see `LICENSE`).
-

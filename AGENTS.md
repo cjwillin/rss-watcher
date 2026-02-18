@@ -1,19 +1,14 @@
-# Agent Handoff (Read First)
+# Agent Notes (Public Repo)
 
-This repository is intended to be modified by AI coding agents (Codex) across sessions.
+This repo is public and is often modified by coding agents across sessions.
 
-## Golden Rule
+## Non-Negotiables
 
-Codex does not reliably retain state across restarts. Persist state in repo markdown files and always begin a new session by reading:
+- Do **not** commit secrets (tokens, OAuth client secrets, DB URLs with passwords, API keys).
+- Keep environment files local-only (examples: `.env*`, `.secrets/*`, `.vercel/*`).
+- Use GitHub Actions Secrets and/or Vercel Environment Variables for all runtime secrets.
+- Avoid committing infrastructure identifiers (hostnames, internal IPs, container IDs).
 
-1. `docs/HANDOFF.md`
-2. `docs/ARCHITECTURE.md`
-3. `docs/OPERATIONS.md`
+## Session State
 
-## Repo Facts
-
-- App: FastAPI + Jinja templates + static CSS (no build step)
-- Data: SQLite (`RSSWATCHER_DB_PATH`)
-- Polling: background task inside FastAPI lifespan
-- Deploy target (current): Proxmox LXC CT112 running systemd service `rss-watcher`
-
+Agents should persist handoff notes to a **local** markdown file outside the git repo (not committed).
