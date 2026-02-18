@@ -476,3 +476,26 @@ input:focus, select:focus{
 @media (prefers-reduced-motion: reduce){
   .lift{ animation:none; }
 }
+
+/* Marketing-only blocks (public /) */
+.mkt{
+  margin-top: 22px;
+}
+.mkt-grid{
+  display:grid;
+  grid-template-columns: 1.05fr .95fr;
+  gap: 18px;
+  align-items: stretch;
+}
+.illus{
+  padding: 14px;
+}
+.illus svg{
+  width:100%;
+  height:auto;
+  display:block;
+  border-radius: calc(var(--radius) - 8px);
+}
+@media (max-width: 900px){
+  .mkt-grid{ grid-template-columns: 1fr; }
+}
