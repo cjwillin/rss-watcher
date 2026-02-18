@@ -8,7 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "db:migrate": "tsx src/db/migrate-cli.ts"
+    "db:migrate": "tsx src/db/migrate-cli.ts",
+    "e2e:db:up": "bash scripts/e2e-db-up.sh",
+    "e2e:db:down": "bash scripts/e2e-db-down.sh",
+    "e2e:db:wait": "bash scripts/e2e-db-wait.sh",
+    "e2e:prepare": "npm run -s e2e:db:wait && DATABASE_URL=$(bash scripts/e2e-db-url.sh) npm run -s db:migrate"
   },
   "dependencies": {
     "dotenv": "^17.3.1",
