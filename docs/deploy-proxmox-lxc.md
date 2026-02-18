@@ -22,3 +22,12 @@ Data is stored in SQLite at:
 
 Back it up like any other single-file DB (or snapshot the container).
 
+## Deploy Updates Safely
+
+When deploying new code, do not delete `/opt/rss-watcher/data/` (or you will wipe configuration and alert history).
+
+If you deploy via tarball extraction, exclude `data/` and `.venv/` from the archive, or extract without removing the destination first.
+
+This repo includes a helper script for Proxmox hosts:
+
+- `scripts/deploy-to-proxmox-ct.sh`
