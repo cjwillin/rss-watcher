@@ -31,3 +31,4 @@ secrets.md
 
 .worktrees/
 .vercel
+.env*.local
