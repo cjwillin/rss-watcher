@@ -24,6 +24,10 @@ data/
 .env
 *.env
 
+# Local secret scratchpads (never commit)
+secrets.md
+.secrets/
+
 
 .worktrees/
 .vercel
