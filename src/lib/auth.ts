@@ -51,7 +51,7 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   callbacks: {
-    async signIn({ account, profile, user }) {
+    async signIn({ account, profile }) {
       if (!account) return false;
 
       if (account.provider === "google") {
@@ -67,19 +67,21 @@ export const authOptions: NextAuthOptions = {
       }
 
       if (account.provider === "credentials") {
-        if (!E2E_TEST_MODE) return false;
-        const sub = (user as unknown as { googleSub?: string } | null)?.googleSub;
-        return sub === E2E_GOOGLE_SUB;
+        return E2E_TEST_MODE;
       }
 
       return false;
     },
-    async jwt({ token, profile, user }) {
+    async jwt({ token, profile, user, account }) {
       const sub = (profile as { sub?: string } | null)?.sub;
       if (sub) token.googleSub = sub;
 
       const uSub = (user as unknown as { googleSub?: string } | null)?.googleSub;
       if (uSub) token.googleSub = uSub;
+
+      if (account?.provider === "credentials" && E2E_TEST_MODE) {
+        token.googleSub = E2E_GOOGLE_SUB;
+      }
       return token;
     },
     async session({ session, token }) {
