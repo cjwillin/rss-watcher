@@ -101,6 +101,11 @@ async def test_new_feed_is_baselined_no_alerts_then_alerts_on_new_items(tmp_path
         created1 = await watcher.poll_once()
         assert created1 == 0
 
+        # Polling again with the same (baselined) item should not alert.
+        router.get(feed_url_1).respond(200, text=rss1)
+        created1b = await watcher.poll_once()
+        assert created1b == 0
+
         # Change the feed URL (simulates the next poll seeing a "new" item).
         with db.connect() as con:
             con.execute("UPDATE feeds SET url = ? WHERE name = ?", (feed_url_2, "Example"))

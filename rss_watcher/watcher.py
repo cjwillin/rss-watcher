@@ -184,19 +184,15 @@ async def poll_once() -> int:
             title = (e.get("title") or "").strip() or "(untitled)"
             published = (e.get("published") or e.get("updated") or "").strip() or None
             summary = (e.get("summary") or e.get("description") or "").strip() or None
-            text = _entry_text(e)
-            matches = _find_matches(feed_id, text, rules)
-            if not matches:
-                continue
-
             with db.connect() as con:
                 row = con.execute(
                     "SELECT id, seen_at FROM entries WHERE feed_id = ? AND entry_key = ?",
                     (feed_id, ek),
                 ).fetchone()
                 if row:
-                    entry_id = int(row["id"])
-                    entry_seen_at = str(row["seen_at"])
+                    # Only alert on newly-discovered entries. Existing entries are part
+                    # of history/baseline and should not produce new alerts later.
+                    continue
                 else:
                     con.execute(
                         "INSERT OR IGNORE INTO entries(feed_id, entry_key, link, title, published, summary) VALUES(?, ?, ?, ?, ?, ?)",
@@ -210,6 +206,11 @@ async def poll_once() -> int:
                         continue
                     entry_id = int(row2["id"])
                     entry_seen_at = str(row2["seen_at"])
+
+                text = _entry_text(e)
+                matches = _find_matches(feed_id, text, rules)
+                if not matches:
+                    continue
 
                 for m in matches:
                     # Apply rules going forward: if this entry was first seen before the rule existed,
