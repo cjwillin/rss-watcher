@@ -206,3 +206,34 @@ def settings_save(
         db.kv_set(con, "smtp_from", smtp_from.strip())
         db.kv_set(con, "smtp_to", smtp_to.strip())
     return RedirectResponse("/settings", status_code=303)
+
+
+@app.get("/logs", response_class=HTMLResponse)
+def logs_page(request: Request):
+    with db.connect() as con:
+        rows = con.execute(
+            """
+            SELECT l.id, l.ts, l.level, l.area, l.message, l.feed_id, l.rule_id, l.entry_link, l.error,
+                   f.name AS feed_name,
+                   r.keyword AS rule_keyword
+            FROM app_log l
+            LEFT JOIN feeds f ON f.id = l.feed_id
+            LEFT JOIN rules r ON r.id = l.rule_id
+            ORDER BY l.id DESC
+            LIMIT 250
+            """
+        ).fetchall()
+        max_rows = (db.kv_get(con, "log_max_rows", "2000") or "2000").strip()
+    return templates.TemplateResponse(
+        request,
+        "logs.html",
+        {"rows": rows, "max_rows": max_rows},
+    )
+
+
+@app.post("/logs/clear")
+def logs_clear():
+    with db.connect() as con:
+        con.execute("DELETE FROM app_log")
+        db.log_write(con, level="info", area="ui", message="logs cleared")
+    return RedirectResponse("/logs", status_code=303)

@@ -4,6 +4,7 @@ import asyncio
 import hashlib
 import re
 import sqlite3
+import traceback
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Iterable
@@ -88,6 +89,9 @@ async def poll_once() -> int:
     smtp_cfg: SmtpConfig | None = None
 
     with db.connect() as con:
+        db.log_write(con, level="info", area="poll", message="poll started")
+
+    with db.connect() as con:
         # Environment overrides (preferred for secrets).
         push_cfg = env_pushover()
         smtp_cfg = env_smtp()
@@ -120,6 +124,12 @@ async def poll_once() -> int:
     if not feeds or not rules:
         with db.connect() as con:
             db.kv_set(con, "last_poll_at", _now_utc_iso())
+            db.log_write(
+                con,
+                level="info",
+                area="poll",
+                message="poll finished (no enabled feeds or no enabled rules)",
+            )
         return 0
 
     created_alerts = 0
@@ -131,6 +141,15 @@ async def poll_once() -> int:
             content = await _fetch_feed(url)
             parsed = feedparser.parse(content)
         except Exception:
+            with db.connect() as con:
+                db.log_write(
+                    con,
+                    level="error",
+                    area="feed",
+                    message=f"feed fetch/parse failed: {name}",
+                    feed_id=feed_id,
+                    error=traceback.format_exc(limit=10),
+                )
             continue
 
         for e in parsed.entries or []:
@@ -176,22 +195,77 @@ async def poll_once() -> int:
                     created_alerts += 1
                     subj = f"RSS Watcher: '{m.keyword}' in {name}"
                     msg = f"{title}\n\nFeed: {name}\nKeyword: {m.keyword}\nLink: {link}\n"
+                    db.log_write(
+                        con,
+                        level="info",
+                        area="match",
+                        message=f"keyword match: {m.keyword}",
+                        feed_id=feed_id,
+                        rule_id=m.rule_id,
+                        entry_link=link,
+                    )
 
                     if push_cfg:
                         try:
                             await send_pushover(push_cfg, subj, title, link)
+                            with db.connect() as con2:
+                                db.log_write(
+                                    con2,
+                                    level="info",
+                                    area="notify",
+                                    message="pushover sent",
+                                    feed_id=feed_id,
+                                    rule_id=m.rule_id,
+                                    entry_link=link,
+                                )
                         except Exception:
-                            pass
+                            with db.connect() as con2:
+                                db.log_write(
+                                    con2,
+                                    level="error",
+                                    area="notify",
+                                    message="pushover failed",
+                                    feed_id=feed_id,
+                                    rule_id=m.rule_id,
+                                    entry_link=link,
+                                    error=traceback.format_exc(limit=10),
+                                )
                     if smtp_cfg:
                         try:
                             send_email(smtp_cfg, subj, msg)
+                            with db.connect() as con2:
+                                db.log_write(
+                                    con2,
+                                    level="info",
+                                    area="notify",
+                                    message="email sent",
+                                    feed_id=feed_id,
+                                    rule_id=m.rule_id,
+                                    entry_link=link,
+                                )
                         except Exception:
-                            pass
+                            with db.connect() as con2:
+                                db.log_write(
+                                    con2,
+                                    level="error",
+                                    area="notify",
+                                    message="email failed",
+                                    feed_id=feed_id,
+                                    rule_id=m.rule_id,
+                                    entry_link=link,
+                                    error=traceback.format_exc(limit=10),
+                                )
 
     with db.connect() as con:
         db.kv_set(con, "last_poll_at", _now_utc_iso())
         if created_alerts:
             db.kv_set(con, "last_alert_at", _now_utc_iso())
+        db.log_write(
+            con,
+            level="info",
+            area="poll",
+            message=f"poll finished (new alerts: {created_alerts})",
+        )
     return created_alerts
 
 
@@ -215,4 +289,3 @@ async def run_loop(stop_event: asyncio.Event) -> None:
             if stop_event.is_set():
                 break
             await asyncio.sleep(1)
-

@@ -74,6 +74,18 @@ def migrate() -> None:
               k TEXT PRIMARY KEY,
               v TEXT NOT NULL
             );
+
+            CREATE TABLE IF NOT EXISTS app_log (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              ts TEXT NOT NULL DEFAULT (datetime('now')),
+              level TEXT NOT NULL,
+              area TEXT NOT NULL,
+              message TEXT NOT NULL,
+              feed_id INTEGER NULL REFERENCES feeds(id) ON DELETE SET NULL,
+              rule_id INTEGER NULL REFERENCES rules(id) ON DELETE SET NULL,
+              entry_link TEXT NULL,
+              error TEXT NULL
+            );
             """
         )
 
@@ -87,5 +99,42 @@ def kv_set(con: sqlite3.Connection, k: str, v: str) -> None:
     con.execute(
         "INSERT INTO kv(k, v) VALUES(?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v",
         (k, v),
+    )
+
+
+def log_write(
+    con: sqlite3.Connection,
+    *,
+    level: str,
+    area: str,
+    message: str,
+    feed_id: int | None = None,
+    rule_id: int | None = None,
+    entry_link: str | None = None,
+    error: str | None = None,
+) -> None:
+    con.execute(
+        """
+        INSERT INTO app_log(level, area, message, feed_id, rule_id, entry_link, error)
+        VALUES(?, ?, ?, ?, ?, ?, ?)
+        """,
+        (level, area, message, feed_id, rule_id, entry_link, error),
+    )
+
+    # Keep logs bounded (default 2000 rows) to avoid unbounded DB growth.
+    max_rows_s = (kv_get(con, "log_max_rows", "2000") or "2000").strip()
+    try:
+        max_rows = max(200, int(max_rows_s))
+    except ValueError:
+        max_rows = 2000
+
+    con.execute(
+        """
+        DELETE FROM app_log
+        WHERE id < (
+          SELECT COALESCE(MAX(id) - ?, 0) FROM app_log
+        )
+        """,
+        (max_rows,),
     )
 

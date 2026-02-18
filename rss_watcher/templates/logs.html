@@ -1,0 +1,53 @@
+{% set active = 'logs' %}
+{% extends "base.html" %}
+{% block content %}
+  <section class="page-h">
+    <h2>Logs</h2>
+    <p class="muted">Recent debug events from polling, matching, and notification delivery. Bounded to <span class="mono">{{ max_rows }}</span> rows.</p>
+  </section>
+
+  <section class="grid">
+    <div class="card wide">
+      <div class="card-h">
+        <div class="card-t">Recent Events</div>
+        <form method="post" action="/logs/clear" onsubmit="return confirm('Clear all logs?');">
+          <button class="btn danger" type="submit">Clear</button>
+        </form>
+      </div>
+      <div class="card-b">
+        {% if rows %}
+          <div class="table">
+            <div class="t-head">
+              <div>When</div>
+              <div>Level</div>
+              <div>Area</div>
+              <div>Message</div>
+              <div>Context</div>
+            </div>
+            {% for r in rows %}
+              <details class="t-row {% if r.level == 'error' %}is-err{% endif %}">
+                <summary class="t-sum">
+                  <div class="mono">{{ r.ts }}</div>
+                  <div><span class="pill {% if r.level == 'error' %}bad{% else %}good{% endif %}">{{ r.level }}</span></div>
+                  <div class="mono">{{ r.area }}</div>
+                  <div class="t-msg">{{ r.message }}</div>
+                  <div class="t-ctx">
+                    {% if r.feed_name %}<span class="pill">feed: {{ r.feed_name }}</span>{% endif %}
+                    {% if r.rule_keyword %}<span class="pill">rule: {{ r.rule_keyword }}</span>{% endif %}
+                    {% if r.entry_link %}<a class="pill link" href="{{ r.entry_link }}" target="_blank" rel="noreferrer">open</a>{% endif %}
+                  </div>
+                </summary>
+                {% if r.error %}
+                  <pre class="pre">{{ r.error }}</pre>
+                {% endif %}
+              </details>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty">No logs yet. Add a feed + rule, then wait for the next poll (or restart the service).</div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+{% endblock %}
+
