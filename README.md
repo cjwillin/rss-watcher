@@ -2,7 +2,7 @@
 
 Watch one or more RSS/Atom feeds and alert on keyword matches.
 
-Includes a minimal, polished web UI plus a background polling loop that de-dupes alerts per `(feed item, rule)`.
+This branch contains the Vercel-deployable Next.js app (multi-user via Google OAuth).
 
 ## What You Get
 
@@ -22,52 +22,35 @@ Includes a minimal, polished web UI plus a background polling loop that de-dupes
 - Rules: add/pause/delete, optional feed scope
 - Settings: poll interval + notification credentials
 
-## Quick Start (Local Dev)
+## Local Dev
 
 ```bash
-python3 -m venv .venv
-. .venv/bin/activate
-pip install -r requirements.txt
-uvicorn rss_watcher.main:app --host 0.0.0.0 --port 8080
+npm install
+npm run dev
 ```
 
-Open:
+App:
 
-- `http://127.0.0.1:8080/`
+- `http://localhost:3000/`
 
-## Configuration
+## Configuration (High Level)
 
-SQLite DB:
+All secrets must be provided via environment variables (Vercel env vars and/or local `.env.local`).
 
-- Default (dev): `./data/rss-watcher.db`
-- Override with `RSSWATCHER_DB_PATH`
+Required env vars (names only):
 
-Notifications:
+- `DATABASE_URL`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `AUTH_SECRET` (or `NEXTAUTH_SECRET`)
+- `APP_CRED_ENC_KEY` (32-byte base64 key; encrypts per-user notification credentials)
 
-- Pushover:
-  - `PUSHOVER_APP_TOKEN`
-  - `PUSHOVER_USER_KEY`
-- SMTP:
-  - `SMTP_HOST`, `SMTP_PORT`
-  - `SMTP_USER`, `SMTP_PASS` (optional; supports unauthenticated relays)
-  - `SMTP_FROM`, `SMTP_TO`
+DB migrations:
 
-Environment variables override anything set in the UI.
-
-## Production Deploy (systemd)
-
-See `docs/deploy-systemd.md`.
-
-## Proxmox LXC Notes
-
-See `docs/deploy-proxmox-lxc.md`.
-
-## Security Notes
-
-- If you enter secrets in the web UI, they are stored in SQLite as plaintext.
-- Prefer environment variables via an env file readable only by root (example: `/etc/rss-watcher.env`).
+```bash
+npm run db:migrate
+```
 
 ## License
 
 MIT (see `LICENSE`).
-
