@@ -2,7 +2,6 @@ import Link from "next/link";
 import { getServerSession } from "next-auth/next";
 
 import { authOptions } from "@/lib/auth";
-import { SIGN_IN_PATH } from "@/lib/paths";
 import { Nav } from "@/components/Nav";
 
 export const dynamic = "force-dynamic";
@@ -33,11 +32,7 @@ export async function Shell({ children }: { children: React.ReactNode }) {
               <Link className="navlink" href="/api/auth/signout">
                 Sign out
               </Link>
-            ) : (
-              <Link className="navlink is-active" href={SIGN_IN_PATH}>
-                Sign in
-              </Link>
-            )}
+            ) : null}
           </div>
         </div>
       </header>
