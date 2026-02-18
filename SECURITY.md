@@ -8,6 +8,5 @@ Contact: open a private report via GitHub Security Advisories for this repositor
 
 ## Notes
 
-- If you enter secrets in the web UI, they are stored in the SQLite DB as plaintext.
-- Prefer environment variables in a root-owned env file (example: `/etc/rss-watcher.env`, mode `0600`).
-
+- Runtime secrets must be provided via environment variables (Vercel env vars or local env).
+- User-provided notification credentials are stored encrypted at rest (requires `APP_CRED_ENC_KEY`).
