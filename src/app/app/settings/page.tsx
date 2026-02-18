@@ -1,64 +1,113 @@
 import { getSettings } from "@/lib/app/settings";
 import { saveSettingsAction } from "@/app/app/settings/actions";
 import { requireUserId } from "@/lib/session";
+import Link from "next/link";
 
 export default async function SettingsPage() {
   const userId = await requireUserId();
   const s = await getSettings(userId);
 
   return (
-    <main style={{ padding: 24 }}>
-      <h1>Settings</h1>
+    <>
+      <section className="page-h">
+        <h2>Settings</h2>
+        <p className="muted">Secrets are stored encrypted at rest for your account.</p>
+      </section>
 
-      <form action={saveSettingsAction} style={{ marginTop: 16, display: "grid", gap: 16, maxWidth: 680 }}>
-        <label style={{ display: "grid", gap: 6 }}>
-          <span>Poll interval (seconds, min 60)</span>
-          <input
-            name="pollIntervalSeconds"
-            type="number"
-            min={60}
-            defaultValue={s.pollIntervalSeconds}
-          />
-        </label>
-
-        <section style={{ border: "1px solid rgba(0,0,0,0.15)", borderRadius: 8, padding: 12 }}>
-          <h2 style={{ fontSize: 18 }}>Pushover</h2>
-          <p style={{ opacity: 0.85, marginTop: 6 }}>
-            Status: {s.pushoverConfigured ? "configured" : "not configured"}
-          </p>
-
-          <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
-            <input name="pushoverAppToken" placeholder="App token" autoComplete="off" />
-            <input name="pushoverUserKey" placeholder="User key" autoComplete="off" />
-            <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <input type="checkbox" name="clearPushover" value="1" />
-              <span>Clear stored Pushover credentials</span>
-            </label>
+      <section className="grid">
+        <div className="card wide">
+          <div className="card-h">
+            <div className="card-t">General</div>
           </div>
-        </section>
+          <div className="card-b">
+            <form className="form" action={saveSettingsAction}>
+              <div className="cols">
+                <label>
+                  <span>Poll interval (seconds)</span>
+                  <input
+                    name="pollIntervalSeconds"
+                    type="number"
+                    min={60}
+                    defaultValue={s.pollIntervalSeconds}
+                  />
+                  <div className="hint">Minimum 60 seconds.</div>
+                </label>
+              </div>
 
-        <section style={{ border: "1px solid rgba(0,0,0,0.15)", borderRadius: 8, padding: 12 }}>
-          <h2 style={{ fontSize: 18 }}>SMTP (Email)</h2>
-          <p style={{ opacity: 0.85, marginTop: 6 }}>
-            Status: {s.smtpConfigured ? "configured" : "not configured"}
-          </p>
+              <div className="sep" />
+              <div className="k">iOS push via Pushover</div>
+              <div className="muted">
+                Status: {s.pushoverConfigured ? "configured" : "not configured"}
+              </div>
+              <div className="cols">
+                <label>
+                  <span>App token</span>
+                  <input name="pushoverAppToken" placeholder="Pushover application token" autoComplete="off" />
+                </label>
+                <label>
+                  <span>User key</span>
+                  <input name="pushoverUserKey" placeholder="Your Pushover user key" autoComplete="off" />
+                </label>
+              </div>
+              <label style={{ marginTop: 6 }}>
+                <span>Clear</span>
+                <select name="clearPushover" defaultValue="0">
+                  <option value="0">Keep existing</option>
+                  <option value="1">Clear stored Pushover credentials</option>
+                </select>
+              </label>
 
-          <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
-            <input name="smtpHost" placeholder="SMTP host" autoComplete="off" />
-            <input name="smtpPort" placeholder="SMTP port (e.g. 587)" autoComplete="off" />
-            <input name="smtpUser" placeholder="SMTP user (optional)" autoComplete="off" />
-            <input name="smtpPass" placeholder="SMTP pass (optional)" autoComplete="off" />
-            <input name="smtpFrom" placeholder="From (alerts@example.com)" autoComplete="off" />
-            <input name="smtpTo" placeholder="To (you@example.com)" autoComplete="off" />
-            <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <input type="checkbox" name="clearSmtp" value="1" />
-              <span>Clear stored SMTP credentials</span>
-            </label>
+              <div className="sep" />
+              <div className="k">Email via SMTP</div>
+              <div className="muted">
+                Status: {s.smtpConfigured ? "configured" : "not configured"}
+              </div>
+              <div className="cols">
+                <label>
+                  <span>SMTP host</span>
+                  <input name="smtpHost" placeholder="smtp.example.com" autoComplete="off" />
+                </label>
+                <label>
+                  <span>SMTP port</span>
+                  <input name="smtpPort" placeholder="587" autoComplete="off" />
+                </label>
+                <label>
+                  <span>SMTP user</span>
+                  <input name="smtpUser" placeholder="optional" autoComplete="off" />
+                </label>
+                <label>
+                  <span>SMTP pass</span>
+                  <input name="smtpPass" type="password" placeholder="optional" autoComplete="off" />
+                </label>
+                <label>
+                  <span>From</span>
+                  <input name="smtpFrom" placeholder="alerts@example.com" autoComplete="off" />
+                </label>
+                <label>
+                  <span>To</span>
+                  <input name="smtpTo" placeholder="you@example.com" autoComplete="off" />
+                </label>
+              </div>
+              <label style={{ marginTop: 6 }}>
+                <span>Clear</span>
+                <select name="clearSmtp" defaultValue="0">
+                  <option value="0">Keep existing</option>
+                  <option value="1">Clear stored SMTP credentials</option>
+                </select>
+              </label>
+
+              <div className="row">
+                <button className="btn" type="submit">
+                  Save
+                </button>
+                <Link className="btn ghost" href="/">
+                  Back
+                </Link>
+              </div>
+            </form>
           </div>
-        </section>
-
-        <button type="submit">Save</button>
-      </form>
-    </main>
+        </div>
+      </section>
+    </>
   );
 }

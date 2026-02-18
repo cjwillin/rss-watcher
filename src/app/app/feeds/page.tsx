@@ -1,54 +1,85 @@
 import { listFeeds } from "@/lib/app/feeds";
 import { addFeedAction, deleteFeedAction, toggleFeedAction } from "@/app/app/feeds/actions";
 import { requireUserId } from "@/lib/session";
+import { ConfirmButton } from "@/components/ConfirmButton";
 
 export default async function FeedsPage() {
   const userId = await requireUserId();
   const items = await listFeeds(userId);
 
   return (
-    <main style={{ padding: 24 }}>
-      <h1>Feeds</h1>
+    <>
+      <section className="page-h">
+        <h2>Feeds</h2>
+        <p className="muted">Manually add one or more RSS/Atom feed URLs.</p>
+      </section>
 
-      <form action={addFeedAction} style={{ marginTop: 16, display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <input name="name" placeholder="Name" />
-        <input name="url" placeholder="https://example.com/feed.xml" style={{ minWidth: 320 }} />
-        <button type="submit">Add</button>
-      </form>
-
-      <div style={{ marginTop: 16, display: "grid", gap: 8 }}>
-        {items.map((f) => (
-          <div
-            key={f.id}
-            style={{
-              border: "1px solid rgba(0,0,0,0.15)",
-              borderRadius: 8,
-              padding: 12,
-              display: "grid",
-              gap: 6,
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-              <strong>{f.name}</strong>
-              <span style={{ opacity: 0.8 }}>
-                {f.enabled ? "enabled" : "disabled"} · {f.armed ? "armed" : "baselining"}
-              </span>
-            </div>
-            <div style={{ opacity: 0.85, wordBreak: "break-word" }}>{f.url}</div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <form action={toggleFeedAction}>
-                <input type="hidden" name="feedId" value={f.id} />
-                <button type="submit">{f.enabled ? "Disable" : "Enable"}</button>
-              </form>
-              <form action={deleteFeedAction}>
-                <input type="hidden" name="feedId" value={f.id} />
-                <button type="submit">Delete</button>
-              </form>
-            </div>
+      <section className="grid">
+        <div className="card">
+          <div className="card-h">
+            <div className="card-t">Add Feed</div>
           </div>
-        ))}
-        {!items.length && <p style={{ opacity: 0.85 }}>No feeds yet.</p>}
-      </div>
-    </main>
+          <div className="card-b">
+            <form className="form" action={addFeedAction}>
+              <label>
+                <span>Name</span>
+                <input name="name" placeholder="e.g. Security News" />
+              </label>
+              <label>
+                <span>URL</span>
+                <input name="url" placeholder="https://example.com/rss.xml" required />
+              </label>
+              <button className="btn" type="submit">
+                Add
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-h">
+            <div className="card-t">Current Feeds</div>
+            <div className="muted">{items.length} total</div>
+          </div>
+          <div className="card-b">
+            {items.length ? (
+              <ul className="list">
+                {items.map((f) => (
+                  <li key={f.id} className="item">
+                    <div className="item-top">
+                      <div className="item-title-row">
+                        <div className="item-title">{f.name}</div>
+                        {f.enabled ? (
+                          <span className="pill good">enabled</span>
+                        ) : (
+                          <span className="pill bad">paused</span>
+                        )}
+                      </div>
+                      <div className="muted mono">{f.url}</div>
+                    </div>
+                    <div className="row">
+                      <form action={toggleFeedAction}>
+                        <input type="hidden" name="feedId" value={f.id} />
+                        <button className="btn ghost" type="submit">
+                          {f.enabled ? "Pause" : "Enable"}
+                        </button>
+                      </form>
+                      <form action={deleteFeedAction}>
+                        <input type="hidden" name="feedId" value={f.id} />
+                        <ConfirmButton className="btn danger" confirmText="Delete this feed?">
+                          Delete
+                        </ConfirmButton>
+                      </form>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="empty">No feeds configured.</div>
+            )}
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

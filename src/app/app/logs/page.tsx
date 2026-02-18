@@ -1,50 +1,66 @@
 import { listLogs } from "@/lib/app/logs";
 import { clearLogsAction } from "@/app/app/logs/actions";
 import { requireUserId } from "@/lib/session";
+import { ConfirmButton } from "@/components/ConfirmButton";
 
 export default async function LogsPage() {
   const userId = await requireUserId();
   const rows = await listLogs(userId);
 
   return (
-    <main style={{ padding: 24 }}>
-      <h1>Logs</h1>
+    <>
+      <section className="page-h">
+        <h2>Logs</h2>
+        <p className="muted">Recent debug events from polling and notification delivery.</p>
+      </section>
 
-      <form action={clearLogsAction} style={{ marginTop: 12 }}>
-        <button type="submit">Clear logs</button>
-      </form>
-
-      <div style={{ marginTop: 16, display: "grid", gap: 8 }}>
-        {rows.map((r) => (
-          <div
-            key={r.id}
-            style={{
-              border: "1px solid rgba(0,0,0,0.15)",
-              borderRadius: 8,
-              padding: 12,
-              display: "grid",
-              gap: 6,
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-              <strong>
-                {r.level} · {r.area}
-              </strong>
-              <span style={{ opacity: 0.8 }}>{String(r.ts)}</span>
-            </div>
-            <div style={{ whiteSpace: "pre-wrap" }}>{r.message}</div>
-            {r.entryLink && (
-              <a href={r.entryLink} target="_blank" rel="noreferrer">
-                {r.entryLink}
-              </a>
-            )}
-            {r.error && (
-              <pre style={{ whiteSpace: "pre-wrap", opacity: 0.85, fontSize: 12 }}>{r.error}</pre>
+      <section className="grid">
+        <div className="card wide">
+          <div className="card-h">
+            <div className="card-t">Recent Events</div>
+            <form action={clearLogsAction}>
+              <ConfirmButton className="btn danger" confirmText="Clear all logs?">
+                Clear
+              </ConfirmButton>
+            </form>
+          </div>
+          <div className="card-b">
+            {rows.length ? (
+              <div className="table">
+                <div className="t-head">
+                  <div>When</div>
+                  <div>Level</div>
+                  <div>Area</div>
+                  <div>Message</div>
+                  <div>Context</div>
+                </div>
+                {rows.map((r) => (
+                  <details key={r.id} className={`t-row ${r.level === "error" ? "is-err" : ""}`}>
+                    <summary className="t-sum">
+                      <div className="mono">{String(r.ts)}</div>
+                      <div>
+                        <span className={`pill ${r.level === "error" ? "bad" : "good"}`}>{r.level}</span>
+                      </div>
+                      <div className="mono">{r.area}</div>
+                      <div className="t-msg">{r.message}</div>
+                      <div className="t-ctx">
+                        {r.entryLink ? (
+                          <a className="pill link" href={r.entryLink} target="_blank" rel="noreferrer">
+                            open
+                          </a>
+                        ) : null}
+                      </div>
+                    </summary>
+                    {r.error ? <pre className="pre">{r.error}</pre> : null}
+                  </details>
+                ))}
+              </div>
+            ) : (
+              <div className="empty">No logs yet. Once polling is enabled, debug events will show up here.</div>
             )}
           </div>
-        ))}
-        {!rows.length && <p style={{ opacity: 0.85 }}>No logs yet.</p>}
-      </div>
-    </main>
+        </div>
+      </section>
+    </>
   );
 }
