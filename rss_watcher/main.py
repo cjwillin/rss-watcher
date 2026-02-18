@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, Form, Request
+from fastapi.responses import PlainTextResponse
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -237,3 +239,37 @@ def logs_clear():
         con.execute("DELETE FROM app_log")
         db.log_write(con, level="info", area="ui", message="logs cleared")
     return RedirectResponse("/logs", status_code=303)
+
+
+@app.get("/test/feed.xml", response_class=PlainTextResponse)
+def test_feed(kw: str = "test"):
+    """
+    Minimal RSS feed for controlled end-to-end testing.
+
+    Disabled by default: set RSSWATCHER_ENABLE_TEST_ENDPOINTS=1 to enable.
+    """
+    if os.environ.get("RSSWATCHER_ENABLE_TEST_ENDPOINTS", "").strip() != "1":
+        return PlainTextResponse("not found", status_code=404)
+
+    kw = (kw or "test").strip()
+    kw = kw[:80]
+    # Unique enough that repeat runs with the same kw de-dupe.
+    guid = f"rss-watcher-test-{kw}"
+    title = f"rss-watcher e2e: {kw}"
+    link = "http://localhost.local/test"
+    xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>RSS Watcher Test Feed</title>
+    <link>{link}</link>
+    <description>Local test feed</description>
+    <item>
+      <title>{title}</title>
+      <link>{link}</link>
+      <guid>{guid}</guid>
+      <description>keyword={kw}</description>
+    </item>
+  </channel>
+</rss>
+"""
+    return PlainTextResponse(xml, media_type="application/rss+xml")
