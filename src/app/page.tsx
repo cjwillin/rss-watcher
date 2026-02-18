@@ -87,13 +87,13 @@ export default async function Home() {
                     Open app
                   </Link>
                 ) : (
-                  <a className="btn" href="/api/auth/signin">
-                    Sign in with Google
-                  </a>
+                  <Link className="btn" href="/signin">
+                    Sign in
+                  </Link>
                 )}
-                <a className="btn ghost" href="/api/health">
+                <Link className="btn ghost" href="/api/health">
                   Health
-                </a>
+                </Link>
               </div>
             </div>
           </div>

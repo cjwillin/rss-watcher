@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { isProtectedAppPath } from "./paths";
+import { isProtectedAppPath, SIGN_IN_PATH } from "./paths";
 
 describe("isProtectedAppPath", () => {
   it("protects /app and subpaths", () => {
@@ -16,3 +16,8 @@ describe("isProtectedAppPath", () => {
   });
 });
 
+describe("SIGN_IN_PATH", () => {
+  it("is a stable, absolute path", () => {
+    expect(SIGN_IN_PATH).toBe("/signin");
+  });
+});

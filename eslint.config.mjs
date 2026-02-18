@@ -8,9 +8,12 @@ const eslintConfig = defineConfig([
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
+    ".vercel/**",
     ".next/**",
     "out/**",
     "build/**",
+    "output/**",
+    "legacy-python/**",
     "next-env.d.ts",
   ]),
 ]);

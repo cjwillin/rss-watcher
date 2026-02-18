@@ -2,6 +2,8 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
+import { SIGN_IN_PATH } from "@/lib/paths";
+
 export async function middleware(req: NextRequest) {
   const token = await getToken({
     req,
@@ -11,7 +13,7 @@ export async function middleware(req: NextRequest) {
   if (token) return NextResponse.next();
 
   const url = req.nextUrl.clone();
-  url.pathname = "/api/auth/signin";
+  url.pathname = SIGN_IN_PATH;
   url.searchParams.set(
     "callbackUrl",
     `${req.nextUrl.pathname}${req.nextUrl.search}`,

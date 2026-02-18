@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth/next";
 
 import { authOptions } from "@/lib/auth";
+import { SIGN_IN_PATH } from "@/lib/paths";
 import { Nav } from "@/components/Nav";
 
 export const dynamic = "force-dynamic";
@@ -27,15 +28,15 @@ export async function Shell({ children }: { children: React.ReactNode }) {
           </Link>
 
           <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-            <Nav />
+            {signedIn ? <Nav /> : null}
             {signedIn ? (
-              <a className="navlink" href="/api/auth/signout">
+              <Link className="navlink" href="/api/auth/signout">
                 Sign out
-              </a>
+              </Link>
             ) : (
-              <a className="navlink is-active" href="/api/auth/signin">
+              <Link className="navlink is-active" href={SIGN_IN_PATH}>
                 Sign in
-              </a>
+              </Link>
             )}
           </div>
         </div>
@@ -53,4 +54,3 @@ export async function Shell({ children }: { children: React.ReactNode }) {
     </>
   );
 }
-
