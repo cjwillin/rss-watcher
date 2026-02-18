@@ -1,9 +1,11 @@
-export default function AppHomePage() {
+import { requireUserId } from "@/lib/session";
+
+export default async function AppHomePage() {
+  await requireUserId();
   return (
     <main style={{ padding: 24 }}>
       <h1>RSS Watcher</h1>
-      <p>Authenticated app area (dashboard placeholder).</p>
+      <p>Dashboard placeholder.</p>
     </main>
   );
 }
-
