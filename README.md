@@ -50,7 +50,7 @@ Required env vars (names only):
 
 Vercel Cron:
 
-- `vercel.json` schedules `/api/internal/poll` every minute.
+- `vercel.json` schedules `/api/internal/poll` daily (Hobby plan limit).
 - Vercel automatically sends `Authorization: Bearer <CRON_SECRET>` for cron requests.
 
 DB migrations:
