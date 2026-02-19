@@ -16,6 +16,14 @@ describe("internal poll route", () => {
     process.env.CRON_SECRET = "test-secret";
   });
 
+  it("returns 500 when CRON_SECRET is missing", async () => {
+    delete process.env.CRON_SECRET;
+    const req = new Request("http://localhost/api/internal/poll", { method: "POST" });
+    const res = await POST(req);
+    expect(res.status).toBe(500);
+    expect(mocks.runDuePollers).not.toHaveBeenCalled();
+  });
+
   it("returns 401 without valid bearer", async () => {
     const req = new Request("http://localhost/api/internal/poll", { method: "POST" });
     const res = await POST(req);
