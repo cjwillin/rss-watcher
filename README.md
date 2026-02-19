@@ -52,7 +52,8 @@ Required env vars (names only):
 
 Vercel Cron:
 
-- `vercel.json` schedules `/api/internal/poll` every minute.
+- `vercel.json` schedules `/api/internal/poll` daily on Hobby (`0 8 * * *`).
+- Faster schedules (hourly/minutely) require Vercel Pro.
 - Vercel automatically sends `Authorization: Bearer <CRON_SECRET>` for cron requests.
 
 ## CI/CD Required Checks
