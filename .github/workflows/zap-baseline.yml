@@ -5,6 +5,10 @@ on:
     - cron: "40 5 * * 2"
   workflow_dispatch:
 
+concurrency:
+  group: zap-baseline-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -16,4 +20,4 @@ jobs:
         uses: zaproxy/action-baseline@v0.14.0
         with:
           target: ${{ secrets.ZAP_TARGET_URL }}
-          fail_action: false
+          fail_action: true
