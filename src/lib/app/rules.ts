@@ -26,6 +26,14 @@ export async function addRule(userId: string, keyword: string, feedId: string | 
   const kw = keyword.trim();
   if (!kw) return;
   const fid = feedId && feedId.trim() ? feedId.trim() : null;
+  if (fid) {
+    const scopedFeed = await db
+      .select({ id: feeds.id })
+      .from(feeds)
+      .where(and(eq(feeds.id, fid), eq(feeds.userId, userId)))
+      .limit(1);
+    if (!scopedFeed[0]) return;
+  }
 
   await db.insert(rules).values({
     userId,
@@ -53,4 +61,3 @@ export async function deleteRule(userId: string, ruleId: string) {
   const db = getDb();
   await db.delete(rules).where(and(eq(rules.userId, userId), eq(rules.id, ruleId)));
 }
-
