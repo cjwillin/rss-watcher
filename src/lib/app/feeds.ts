@@ -2,6 +2,7 @@ import { and, eq } from "drizzle-orm";
 
 import { getDb } from "@/db";
 import { feeds } from "@/db/schema";
+import { validateFeedUrl } from "@/lib/security/feed-url";
 
 export async function listFeeds(userId: string) {
   const db = getDb();
@@ -24,13 +25,15 @@ export async function addFeed(userId: string, name: string, url: string) {
   const cleanName = name.trim() || "Feed";
   const cleanUrl = url.trim();
   if (!cleanUrl) return;
+  const verdict = validateFeedUrl(cleanUrl);
+  if (!verdict.ok) return;
 
   await db
     .insert(feeds)
     .values({
       userId,
       name: cleanName,
-      url: cleanUrl,
+      url: verdict.url,
       enabled: true,
       // armed defaults false: baseline on first poll
     })
@@ -55,4 +58,3 @@ export async function deleteFeed(userId: string, feedId: string) {
   const db = getDb();
   await db.delete(feeds).where(and(eq(feeds.userId, userId), eq(feeds.id, feedId)));
 }
-
