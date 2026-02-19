@@ -23,7 +23,7 @@ export default async function Home() {
 
           <div className="row" style={{ marginTop: 16 }}>
             {signedIn ? (
-              <Link className="btn" href="/app/feeds">
+              <Link className="btn" href="/app">
                 Open app
               </Link>
             ) : (

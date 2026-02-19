@@ -1,0 +1,19 @@
+name: ZAP Baseline
+
+on:
+  schedule:
+    - cron: "40 5 * * 2"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  zap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ZAP baseline scan
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: ${{ secrets.ZAP_TARGET_URL }}
+          fail_action: false

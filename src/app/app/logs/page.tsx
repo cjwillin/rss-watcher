@@ -1,11 +1,11 @@
-import { listLogs } from "@/lib/app/logs";
+import { getLogSummary, listLogs } from "@/lib/app/logs";
 import { clearLogsAction } from "@/app/app/logs/actions";
 import { requireUserId } from "@/lib/session";
 import { ConfirmButton } from "@/components/ConfirmButton";
 
 export default async function LogsPage() {
   const userId = await requireUserId();
-  const rows = await listLogs(userId);
+  const [rows, summary] = await Promise.all([listLogs(userId), getLogSummary(userId)]);
 
   return (
     <>
@@ -15,6 +15,28 @@ export default async function LogsPage() {
       </section>
 
       <section className="grid">
+        <div className="card">
+          <div className="card-h">
+            <div className="card-t">Last 24h</div>
+          </div>
+          <div className="card-b">
+            <div className="cols">
+              <div>
+                <div className="k">Total events</div>
+                <div>{summary.total24h}</div>
+              </div>
+              <div>
+                <div className="k">Errors</div>
+                <div>{summary.errors24h}</div>
+              </div>
+            </div>
+            <div className="k" style={{ marginTop: 12 }}>
+              Notification failures
+            </div>
+            <div>{summary.notifyFailures24h}</div>
+          </div>
+        </div>
+
         <div className="card wide">
           <div className="card-h">
             <div className="card-t">Recent Events</div>

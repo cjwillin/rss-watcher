@@ -10,6 +10,7 @@ function itemIsActive(pathname: string, href: string): boolean {
 export function Nav() {
   const pathname = usePathname() || "/";
   const items: Array<{ href: string; label: string }> = [
+    { href: "/app", label: "Overview" },
     { href: "/app/feeds", label: "Feeds" },
     { href: "/app/rules", label: "Rules" },
     { href: "/app/logs", label: "Logs" },

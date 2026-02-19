@@ -41,7 +41,7 @@ export async function Shell({ children }: { children: React.ReactNode }) {
         {children}
         <footer className="foot">
           <div className="foot-in">
-            <div className="muted">Polling runs on GitHub Actions. Alerts de-dupe per item and rule.</div>
+            <div className="muted">Polling runs on Vercel Cron. Alerts de-dupe per item and rule.</div>
             <div className="muted">Built to be boring, reliable, and fast.</div>
           </div>
         </footer>

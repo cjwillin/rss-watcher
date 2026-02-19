@@ -31,7 +31,7 @@ export async function POST() {
   await db.delete(feeds).where(eq(feeds.userId, userId));
   await db.delete(userLog).where(eq(userLog.userId, userId));
   await db.delete(userSettings).where(eq(userSettings.userId, userId));
+  (globalThis as unknown as { __rssWatcherE2eFeedSeq?: number }).__rssWatcherE2eFeedSeq = 0;
 
   return NextResponse.json({ ok: true, cleared: true });
 }
-

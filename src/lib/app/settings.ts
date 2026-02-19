@@ -2,7 +2,7 @@ import { eq, sql } from "drizzle-orm";
 
 import { getDb } from "@/db";
 import { userSettings } from "@/db/schema";
-import { encryptSecret } from "@/lib/crypto/creds";
+import { decryptSecret, encryptSecret } from "@/lib/crypto/creds";
 
 export async function getSettings(userId: string) {
   const db = getDb();
@@ -91,3 +91,37 @@ export async function saveSettings(
     .onConflictDoUpdate({ target: userSettings.userId, set });
 }
 
+export async function getNotificationSettings(userId: string) {
+  const db = getDb();
+  const rows = await db
+    .select({
+      pollIntervalSeconds: userSettings.pollIntervalSeconds,
+      pushoverAppTokenEnc: userSettings.pushoverAppTokenEnc,
+      pushoverUserKeyEnc: userSettings.pushoverUserKeyEnc,
+      smtpHostEnc: userSettings.smtpHostEnc,
+      smtpPortEnc: userSettings.smtpPortEnc,
+      smtpUserEnc: userSettings.smtpUserEnc,
+      smtpPassEnc: userSettings.smtpPassEnc,
+      smtpFromEnc: userSettings.smtpFromEnc,
+      smtpToEnc: userSettings.smtpToEnc,
+    })
+    .from(userSettings)
+    .where(eq(userSettings.userId, userId))
+    .limit(1);
+  const row = rows[0];
+  if (!row) return null;
+
+  const decrypt = (v: string | null) => (v ? decryptSecret(v) : "");
+
+  return {
+    pollIntervalSeconds: row.pollIntervalSeconds,
+    pushoverAppToken: decrypt(row.pushoverAppTokenEnc),
+    pushoverUserKey: decrypt(row.pushoverUserKeyEnc),
+    smtpHost: decrypt(row.smtpHostEnc),
+    smtpPort: decrypt(row.smtpPortEnc),
+    smtpUser: decrypt(row.smtpUserEnc),
+    smtpPass: decrypt(row.smtpPassEnc),
+    smtpFrom: decrypt(row.smtpFromEnc),
+    smtpTo: decrypt(row.smtpToEnc),
+  };
+}

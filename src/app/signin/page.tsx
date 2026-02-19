@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function SignInPage() {
   const session = await getServerSession(authOptions);
-  if (session?.user) redirect("/app/feeds");
+  if (session?.user) redirect("/app");
 
   const testMode = process.env.E2E_TEST_MODE === "1";
 
@@ -21,8 +21,7 @@ export default async function SignInPage() {
         </p>
       </section>
 
-      <SignInCard callbackUrl="/app/feeds" testMode={testMode} />
+  <SignInCard callbackUrl="/app" testMode={testMode} />
     </>
   );
 }
-
