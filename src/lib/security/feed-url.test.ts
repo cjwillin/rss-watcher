@@ -17,4 +17,11 @@ describe("validateFeedUrl", () => {
   it("rejects credentialed urls", () => {
     expect(validateFeedUrl("https://user:pass@example.com/feed").ok).toBe(false);
   });
+
+  it("allows localhost only in e2e test mode", () => {
+    process.env.E2E_TEST_MODE = "1";
+    expect(validateFeedUrl("http://localhost:3000/api/e2e/feed").ok).toBe(true);
+    delete process.env.E2E_TEST_MODE;
+    expect(validateFeedUrl("http://localhost:3000/api/e2e/feed").ok).toBe(false);
+  });
 });

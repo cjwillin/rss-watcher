@@ -47,11 +47,32 @@ Required env vars (names only):
 - `AUTH_SECRET` (or `NEXTAUTH_SECRET`)
 - `APP_CRED_ENC_KEY` (32-byte base64 key; encrypts per-user notification credentials)
 - `CRON_SECRET` (required bearer token for `/api/internal/poll`)
+- `POLL_MAX_USERS_PER_RUN` (optional; default `25`)
+- `POLL_MAX_ENTRIES_PER_FEED` (optional; default `200`)
 
 Vercel Cron:
 
-- `vercel.json` schedules `/api/internal/poll` daily (Hobby plan limit).
+- `vercel.json` schedules `/api/internal/poll` every minute.
 - Vercel automatically sends `Authorization: Bearer <CRON_SECRET>` for cron requests.
+
+## CI/CD Required Checks
+
+Configure branch protection so merges require these checks:
+
+- `CI / test`
+- `CI / e2e`
+- `CodeQL / Analyze (javascript-typescript)`
+- `Dependency Review / dependency-review`
+- `Secret Scan (gitleaks) / gitleaks`
+- `ZAP Baseline / zap`
+
+## Cron Secret Rotation
+
+1. Generate a new strong token.
+2. Update `CRON_SECRET` in Vercel environment variables.
+3. Redeploy to ensure all runtime instances use the new value.
+4. Verify the internal poll route still authenticates via Vercel cron.
+5. Remove any old secret material from local shells/history where applicable.
 
 DB migrations:
 
