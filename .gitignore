@@ -6,6 +6,16 @@ __pycache__/
 .ruff_cache/
 .DS_Store
 
+# Node / Next.js
+node_modules/
+.next/
+out/
+.vercel/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
 # Local data / secrets
 data/
 *.db
@@ -19,3 +29,9 @@ secrets.md
 .secrets/
 
 .worktrees/
+.vercel
+.env*.local
+
+# Playwright artifacts
+playwright-report/
+test-results/
