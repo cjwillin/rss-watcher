@@ -37,5 +37,5 @@ export type PollRunStats = {
   notificationsSent: number;
   notificationsFailed: number;
   errors: number;
+  hasMoreDue: boolean;
 };
-

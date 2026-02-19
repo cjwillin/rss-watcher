@@ -22,7 +22,15 @@ function asRecord(v: unknown): Record<string, unknown> {
   return v as Record<string, unknown>;
 }
 
+function intEnv(name: string, fallback: number, min: number): number {
+  const raw = (process.env[name] ?? "").trim();
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(min, Math.floor(n));
+}
+
 export async function runPollerForUser(userId: string): Promise<PollRunStats> {
+  const maxEntriesPerFeed = intEnv("POLL_MAX_ENTRIES_PER_FEED", 200, 1);
   const stats: PollRunStats = {
     usersProcessed: 1,
     feedsPolled: 0,
@@ -31,6 +39,7 @@ export async function runPollerForUser(userId: string): Promise<PollRunStats> {
     notificationsSent: 0,
     notificationsFailed: 0,
     errors: 0,
+    hasMoreDue: false,
   };
 
   const [feeds, rules, settings] = await Promise.all([
@@ -49,7 +58,7 @@ export async function runPollerForUser(userId: string): Promise<PollRunStats> {
       const parsed = await parser.parseURL(feed.url);
       const items = Array.isArray(parsed.items) ? parsed.items : [];
 
-      for (const item of items) {
+      for (const item of items.slice(0, maxEntriesPerFeed)) {
         const normalized = normalizeFeedEntry(asRecord(item));
         if (!normalized) continue;
 
@@ -138,6 +147,8 @@ export async function runPollerForUser(userId: string): Promise<PollRunStats> {
 
 export async function runDuePollers(now = new Date()): Promise<PollRunStats> {
   const dueUsers = await getDueUsers(now);
+  const maxUsersPerRun = intEnv("POLL_MAX_USERS_PER_RUN", 25, 1);
+  const usersToProcess = dueUsers.slice(0, maxUsersPerRun);
 
   const stats: PollRunStats = {
     usersProcessed: 0,
@@ -147,9 +158,10 @@ export async function runDuePollers(now = new Date()): Promise<PollRunStats> {
     notificationsSent: 0,
     notificationsFailed: 0,
     errors: 0,
+    hasMoreDue: dueUsers.length > usersToProcess.length,
   };
 
-  for (const due of dueUsers) {
+  for (const due of usersToProcess) {
     const userStats = await runPollerForUser(due.userId);
     stats.usersProcessed += 1;
     stats.feedsPolled += userStats.feedsPolled;

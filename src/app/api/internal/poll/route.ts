@@ -18,5 +18,5 @@ export async function POST(req: Request) {
   if (auth !== `Bearer ${secret}`) return unauthorized();
 
   const stats = await runDuePollers();
-  return NextResponse.json({ ok: true, stats });
+  return NextResponse.json({ ok: true, stats, hasMoreDue: stats.hasMoreDue });
 }

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  runDuePollers: vi.fn(async () => ({ usersProcessed: 0 })),
+  runDuePollers: vi.fn(async () => ({ usersProcessed: 0, hasMoreDue: false })),
 }));
 
 vi.mock("@/lib/poller/runner", () => ({
@@ -24,6 +24,7 @@ describe("internal poll route", () => {
   });
 
   it("runs poller with valid bearer", async () => {
+    mocks.runDuePollers.mockResolvedValueOnce({ usersProcessed: 2, hasMoreDue: true });
     const req = new Request("http://localhost/api/internal/poll", {
       method: "POST",
       headers: { authorization: "Bearer test-secret" },
@@ -32,5 +33,7 @@ describe("internal poll route", () => {
     const res = await POST(req);
     expect(res.status).toBe(200);
     expect(mocks.runDuePollers).toHaveBeenCalledTimes(1);
+    const body = await res.json();
+    expect(body.hasMoreDue).toBe(true);
   });
 });
