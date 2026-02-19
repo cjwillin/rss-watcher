@@ -3,7 +3,7 @@
   "crons": [
     {
       "path": "/api/internal/poll",
-      "schedule": "*/1 * * * *"
+      "schedule": "0 8 * * *"
     }
   ]
 }
